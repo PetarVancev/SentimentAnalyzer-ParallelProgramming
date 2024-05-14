@@ -24,10 +24,9 @@ public class SentimentAnalyzer implements org.eclipse.jetty.websocket.api.WebSoc
     private final StanfordCoreNLP sentimentPipeline;
     private ExecutorService threadPool;
     private final BlockingQueue<String> reviewQueue = new LinkedBlockingQueue<>();
-    private int analyzedReviewsCount = 0;
+    private static int  analyzedReviewsCount = 0;
 
     public SentimentAnalyzer(int mode) {
-        // Initialize the sentiment analysis pipeline
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
         props.setProperty("parse.model", "edu/stanford/nlp/models/lexparser/englishPCFG.caseless.ser.gz");
@@ -39,7 +38,6 @@ public class SentimentAnalyzer implements org.eclipse.jetty.websocket.api.WebSoc
             threadPool = Executors.newFixedThreadPool(1);
         } else if (mode == 2) {
             int availableProcessors = Runtime.getRuntime().availableProcessors();
-            System.out.println(availableProcessors);
             threadPool = Executors.newFixedThreadPool(availableProcessors);
         } else {
             System.out.println("Choose mode 1 or 2");
@@ -95,7 +93,8 @@ public class SentimentAnalyzer implements org.eclipse.jetty.websocket.api.WebSoc
                 JSONObject reviewJson = new JSONObject(reviewJsonString);
                 String reviewText = reviewJson.getString("reviewText");
                 int sentiment = clientEndpoint.analyzeSentiment(reviewText);
-                clientEndpoint.printFormattedResult(topic, reviewJson, reviewText, sentiment);
+                System.out.println("Analyzed review number: " + analyzedReviewsCount);
+//                clientEndpoint.printFormattedResult(topic, reviewJson, reviewText, sentiment);
             } catch (JSONException e) {
                 System.out.println("Received non-JSON message: " + review);
                 System.out.println();
